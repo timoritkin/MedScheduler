@@ -1,4 +1,4 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzNfWPgew2ZJmiJWF2ENKzyS8SD6MDM57gzb2ZdvxDLjYHCeQLzwOcWEpYE72UkxNlIBg/exec"; // 👈 הכנס כאן את ה-URL של Google Apps Script
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz4Je_3ED1enqtTx7hLlhwe96hJFspcohpgdX5Pnn3hHBzEcUaoK7dCqq87fL40KZu3ig/exec"; // 👈 הכנס כאן את ה-URL של Google Apps Script
 
 function copyField(id) {
   const input = document.getElementById(id);

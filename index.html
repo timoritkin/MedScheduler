@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>טופס הזנת נתונים</title>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="card">
+  <div class="card-header">
+    <div class="icon">📋</div>
+    <h1>הזנת נתונים</h1>
+    <p class="subtitle">מלא את הפרטים ושלח לגיליון Google</p>
+  </div>
+  <div class="divider"></div>
+
+  <!-- שם פרטי -->
+  <div class="field-group">
+    <label>שם פרטי <span class="req">*</span></label>
+    <div class="input-row">
+      <input type="text" id="name" placeholder="הכנס שם פרטי">
+      <button class="copy-btn" onclick="copyField('name')" title="העתק">
+        📋
+        <span class="tooltip">הועתק!</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- שם משפחה -->
+  <div class="field-group">
+    <label>שם משפחה <span class="req">*</span></label>
+    <div class="input-row">
+      <input type="text" id="surname" placeholder="הכנס שם משפחה">
+      <button class="copy-btn" onclick="copyField('surname')" title="העתק">
+        📋
+        <span class="tooltip">הועתק!</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- טלפון -->
+  <div class="field-group">
+    <label>מספר טלפון <span class="req">*</span></label>
+    <div class="input-row">
+      <input type="tel" id="phone" placeholder="05X-XXXXXXX" maxlength="15" dir="ltr" style="text-align:right;">
+      <button class="copy-btn" onclick="copyField('phone')" title="העתק">
+        📋
+        <span class="tooltip">הועתק!</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- תאריך -->
+  <div class="field-group">
+    <label>תאריך <span class="req">*</span></label>
+    <div class="input-row">
+      <input type="date" id="date">
+      <button class="copy-btn" onclick="copyField('date')" title="העתק">
+        📋
+        <span class="tooltip">הועתק!</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- שעה -->
+  <div class="field-group">
+    <label>שעה <span class="req">*</span></label>
+    <div class="input-row">
+      <input type="time" id="time">
+      <button class="copy-btn" onclick="copyField('time')" title="העתק">
+        📋
+        <span class="tooltip">הועתק!</span>
+      </button>
+    </div>
+  </div>
+
+  <button class="submit-btn" onclick="submitForm()">📤 שלח לגיליון Google</button>
+  <div id="message"></div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,232 @@
+:root {
+  --primary: #1a73e8;
+  --primary-dark: #1558b0;
+  --success: #34a853;
+  --bg: #f0f4ff;
+  --card: #ffffff;
+  --text: #1e2a3a;
+  --muted: #6b7a99;
+  --border: #d0d9f0;
+  --shadow: 0 8px 32px rgba(26, 115, 232, 0.10);
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Heebo', sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 16px;
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(26,115,232,0.08) 0%, transparent 50%),
+    radial-gradient(circle at 90% 80%, rgba(52,168,83,0.07) 0%, transparent 50%);
+}
+
+.card {
+  background: var(--card);
+  border-radius: 24px;
+  box-shadow: var(--shadow), 0 2px 8px rgba(0,0,0,0.06);
+  padding: 44px 40px 36px;
+  width: 100%;
+  max-width: 520px;
+  border: 1px solid rgba(26,115,232,0.08);
+}
+
+.card-header {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.card-header .icon {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #1a73e8, #4fa3ff);
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 16px rgba(26,115,232,0.3);
+}
+
+h1 {
+  color: var(--text);
+  font-size: 1.7rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 300;
+}
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0 0 32px;
+}
+
+.field-group {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+  letter-spacing: 0.3px;
+}
+
+label span.req {
+  color: #e53935;
+  margin-right: 2px;
+}
+
+.input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  font-family: 'Heebo', sans-serif;
+  font-size: 0.97rem;
+  color: var(--text);
+  background: #f8faff;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  outline: none;
+  direction: rtl;
+}
+
+input:focus {
+  border-color: var(--primary);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(26,115,232,0.12);
+}
+
+input::placeholder {
+  color: #b0bcd0;
+  font-weight: 300;
+}
+
+input[type="date"],
+input[type="time"] {
+  cursor: pointer;
+}
+
+.copy-btn {
+  flex-shrink: 0;
+  background: #eef3ff;
+  border: 1.5px solid var(--border);
+  color: var(--primary);
+  border-radius: 10px;
+  padding: 10px 13px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.18s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 46px;
+  width: 46px;
+  position: relative;
+}
+
+.copy-btn:hover {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+  box-shadow: 0 2px 10px rgba(26,115,232,0.25);
+}
+
+.copy-btn.copied {
+  background: var(--success);
+  border-color: var(--success);
+  color: #fff;
+}
+
+.copy-btn .tooltip {
+  position: absolute;
+  top: -34px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e2a3a;
+  color: #fff;
+  font-size: 0.72rem;
+  padding: 4px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  font-family: 'Heebo', sans-serif;
+}
+
+.copy-btn.copied .tooltip {
+  opacity: 1;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, #1a73e8, #4285f4);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-family: 'Heebo', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 10px;
+  letter-spacing: 0.5px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 16px rgba(26,115,232,0.3);
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(26,115,232,0.4);
+}
+
+.submit-btn:active {
+  transform: translateY(0);
+}
+
+#message {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 0.92rem;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: 10px;
+  display: none;
+}
+
+#message.success {
+  background: #e6f9ed;
+  color: #1e7e34;
+  display: block;
+}
+
+#message.error {
+  background: #fdecea;
+  color: #c62828;
+  display: block;
+}
+
+@media (max-width: 480px) {
+  .card { padding: 30px 20px 24px; }
+}

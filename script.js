@@ -14,6 +14,7 @@ function switchTab(tab) {
   document.getElementById('tab-' + tab).classList.add('active');
   document.getElementById('page-' + tab).classList.add('active');
   if (tab === 'dashboard') loadData();
+  if (tab === 'return') loadReturnData();
 }
 
 /* ══════════════════════════════
@@ -165,61 +166,91 @@ function hideError() {
 setInterval(() => {
   if (document.getElementById('page-dashboard').classList.contains('active')) loadData();
 }, 60000);
-
 /* ══════════════════════════════
-   RETURN CALL — URL של הסקריפט השני
+   RETURN CALL
 ══════════════════════════════ */
-const RETURN_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw3aQxm9C0l7YQCTj6I1fLvWM2NsWRVbYYsAmwEOng_Ogw63jgZAafUmAZGQNqL_j4TWg/exec"; // 👈 הכנס כאן את ה-URL של הסקריפט השני
+const RETURN_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxa_z-qUKWRtfvo_kLBBtTkWzVrVdN0thi35dNGgGm2FVltsQyQbn94Wcfxli2VWllXcg/exec"; // 👈 הכנס כאן את ה-URL של הסקריפט השני
 
-function sendReturnMessage() {
-  const phoneInput = document.getElementById('returnPhone');
-  const phone = phoneInput.value.trim();
+const RETURN_MESSAGE =
+  'שלום,\n' +
+  'פניתם לקביעת תורים לד"ר אזרוב נינה, מומחית רפואת ריאות, דרך כללית מושלם.\n' +
+  'מצטערים שלא הצלחנו לענות לשיחה שלך קודם.\n' +
+  'תוכל/י לקבוע תור בכמה דרכים:\n' +
+  '✅ להמשיך להתכתב איתנו כאן בוואטסאפ ונטפל בקביעת התור\n\n' +
+  '📞 אם מעדיפים שנחזור אליכם טלפונית - אנא ציינו זאת בהודעה\n\n' +
+  '💻 להיכנס לאתר האינטרנט ולקבוע תור בעצמכם:\n' +
+  'https://www.doctorim.co.il/s/doctor-809/%D7%93%D7%A8-%D7%A0%D7%99%D7%A0%D7%94-%D7%90%D7%96%D7%A8%D7%95%D7%91/%D7%9E%D7%97%D7%9C%D7%95%D7%AA-%D7%A8%D7%99%D7%90%D7%94\n\n' +
+  'נשמח לעזור! 🙏';
 
-  if (!phone) {
-    showReturnMsg("⚠️ יש להכניס מספר טלפון", "error");
+let allReturnData = [];
+let returnSentCount = 0;
+
+async function loadReturnData() {
+  const grid = document.getElementById('returnGrid');
+  grid.innerHTML = '<div class="state-box"><div class="spinner"></div><h3>טוען נתונים...</h3></div>';
+
+  try {
+    const res = await fetch(RETURN_SCRIPT_URL + "?action=getData");
+    const json = await res.json();
+    allReturnData = json.data || [];
+    document.getElementById('returnTotal').textContent = allReturnData.length;
+    displayReturnCards(allReturnData);
+    document.getElementById('returnErrorBanner').style.display = 'none';
+  } catch(e) {
+    document.getElementById('returnErrorBanner').textContent = '⚠️ לא ניתן לטעון נתונים. וודא שה-URL נכון ושה-deployment עודכן.';
+    document.getElementById('returnErrorBanner').style.display = 'block';
+    grid.innerHTML = '<div class="state-box"><div class="big-icon">❌</div><h3>שגיאה בטעינת נתונים</h3></div>';
+  }
+}
+
+function displayReturnCards(data) {
+  const grid = document.getElementById('returnGrid');
+
+  if (!data || data.length === 0) {
+    grid.innerHTML = '<div class="state-box"><div class="big-icon">📭</div><h3>אין שיחות להחזרה</h3><p>הגיליון ריק</p></div>';
     return;
   }
 
-  const btn = event.target;
-  btn.disabled = true;
-  btn.textContent = "⏳ שולח...";
+  grid.innerHTML = data.map((row, i) => {
+    const cleaned = row.phone.replace(/\D/g, '').replace(/^0/, '');
+    const fullPhone = '972' + cleaned;
+    const waLink = 'https://wa.me/' + fullPhone + '?text=' + encodeURIComponent(RETURN_MESSAGE);
 
-  // שולח לסקריפט השני + פותח WhatsApp
-  const params = new URLSearchParams({ phone });
-  fetch(RETURN_SCRIPT_URL + "?" + params.toString(), { method: "GET", mode: "no-cors" })
-    .then(() => {
-      // בנה את הלינק לפתיחת WhatsApp ישירות
-      let cleaned = phone.replace(/\D/g, "").replace(/^0/, "");
-      const fullPhone = "972" + cleaned;
-
-      const message =
-        'שלום,\n' +
-        'פניתם לקביעת תורים לד"ר אזרוב נינה, מומחית רפואת ריאות, דרך כללית מושלם.\n' +
-        'מצטערים שלא הצלחנו לענות לשיחה שלך קודם.\n' +
-        'תוכל/י לקבוע תור בכמה דרכים:\n' +
-        '✅ להמשיך להתכתב איתנו כאן בוואטסאפ ונטפל בקביעת התור\n\n' +
-        '📞 אם מעדיפים שנחזור אליכם טלפונית - אנא ציינו זאת בהודעה\n\n' +
-        '💻 להיכנס לאתר האינטרנט ולקבוע תור בעצמכם:\n' +
-        'https://www.doctorim.co.il/s/doctor-809/%D7%93%D7%A8-%D7%A0%D7%99%D7%A0%D7%94-%D7%90%D7%96%D7%A8%D7%95%D7%91/%D7%9E%D7%97%D7%9C%D7%95%D7%AA-%D7%A8%D7%99%D7%90%D7%94\n\n' +
-        'נשמח לעזור! 🙏';
-
-      const waUrl = "https://wa.me/" + fullPhone + "?text=" + encodeURIComponent(message);
-      window.open(waUrl, "_blank");
-
-      showReturnMsg("✅ הנתונים נשמרו ו-WhatsApp נפתח!", "success");
-      phoneInput.value = "";
-    })
-    .catch(err => showReturnMsg("❌ שגיאה: " + err.message, "error"))
-    .finally(() => {
-      btn.disabled = false;
-      btn.textContent = "📤 שלח הודעת WhatsApp";
-    });
+    return `
+      <div class="patient-card" style="animation-delay:${i*0.05}s" id="return-card-${i}">
+        <div class="card-top">
+          <div class="patient-info">
+            <div class="avatar" style="background: linear-gradient(135deg, #25d366, #128c7e);">📞</div>
+            <div>
+              <div class="patient-name" dir="ltr">${row.phone}</div>
+              <div class="patient-phone">נכנס: ${row.timestamp || 'לא ידוע'}</div>
+            </div>
+          </div>
+          <div class="time-badge" style="background:rgba(37,211,102,0.12); color:var(--primary);">
+            ממתין לשיחה
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="${waLink}" target="_blank" class="wa-btn wa-btn-1" onclick="markSent(${i})">
+            ${WA_SVG} שלח הודעת WhatsApp
+          </a>
+        </div>
+      </div>`;
+  }).join('');
 }
 
-function showReturnMsg(text, type) {
-  const msg = document.getElementById("returnMessage");
-  msg.textContent = text;
-  msg.className = type;
-  msg.style.display = "block";
-  setTimeout(() => { msg.className = ""; msg.style.display = "none"; }, 5000);
+function markSent(index) {
+  returnSentCount++;
+  document.getElementById('returnSent').textContent = returnSentCount;
+  const card = document.getElementById('return-card-' + index);
+  if (card) {
+    card.style.opacity = '0.45';
+    card.querySelector('.time-badge').textContent = '✅ נשלח';
+    card.querySelector('.time-badge').style.color = 'var(--primary)';
+  }
+}
+
+function filterReturn() {
+  const q = document.getElementById('returnSearch').value.toLowerCase();
+  displayReturnCards(allReturnData.filter(r => r.phone.toLowerCase().includes(q)));
 }

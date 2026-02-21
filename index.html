@@ -3,82 +3,130 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>טופס הזנת נתונים</title>
-  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <title>ClinicFlow</title>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="card">
-  <div class="card-header">
-    <div class="icon">📋</div>
-    <h1>הזנת נתונים</h1>
-    <p class="subtitle">מלא את הפרטים ושלח לגיליון Google</p>
+<!-- ══ HEADER ══ -->
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">🏥</div>
+    <span class="logo-text">ClinicFlow</span>
   </div>
-  <div class="divider"></div>
 
-  <!-- שם פרטי -->
-  <div class="field-group">
-    <label>שם פרטי <span class="req">*</span></label>
-    <div class="input-row">
-      <input type="text" id="name" placeholder="הכנס שם פרטי">
-      <button class="copy-btn" onclick="copyField('name')" title="העתק">
-        📋
-        <span class="tooltip">הועתק!</span>
-      </button>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('form')" id="tab-form">✏️ הזנת תור</button>
+    <button class="tab" onclick="switchTab('dashboard')" id="tab-dashboard">📊 דשבורד</button>
+  </div>
+
+  <div class="header-right">
+    <div class="status-dot"></div>
+    <button class="refresh-btn" onclick="loadData()" id="refreshBtn">
+      <span class="ri">🔄</span> רענן
+    </button>
+  </div>
+</div>
+
+<!-- ══ TAB 1 — FORM ══ -->
+<div class="page active" id="page-form">
+  <div class="form-wrapper">
+    <div class="form-card">
+      <div class="form-header">
+        <div class="form-icon">📋</div>
+        <h1>הזנת תור חדש</h1>
+        <p>מלא את הפרטים ושלח לגיליון Google</p>
+      </div>
+      <div class="form-divider"></div>
+
+      <div class="field-group">
+        <label class="field-label">שם פרטי <span class="req">*</span></label>
+        <div class="input-row">
+          <input type="text" id="name" class="form-input" placeholder="הכנס שם פרטי">
+          <button class="copy-btn" onclick="copyField('name')">📋<span class="tooltip">הועתק!</span></button>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">שם משפחה <span class="req">*</span></label>
+        <div class="input-row">
+          <input type="text" id="surname" class="form-input" placeholder="הכנס שם משפחה">
+          <button class="copy-btn" onclick="copyField('surname')">📋<span class="tooltip">הועתק!</span></button>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">מספר טלפון <span class="req">*</span></label>
+        <div class="input-row">
+          <input type="tel" id="phone" class="form-input" placeholder="05X-XXXXXXX" maxlength="15" dir="ltr" style="text-align:right;">
+          <button class="copy-btn" onclick="copyField('phone')">📋<span class="tooltip">הועתק!</span></button>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">תאריך <span class="req">*</span></label>
+        <div class="input-row">
+          <input type="date" id="date" class="form-input">
+          <button class="copy-btn" onclick="copyField('date')">📋<span class="tooltip">הועתק!</span></button>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">שעה <span class="req">*</span></label>
+        <div class="input-row">
+          <input type="time" id="time" class="form-input">
+          <button class="copy-btn" onclick="copyField('time')">📋<span class="tooltip">הועתק!</span></button>
+        </div>
+      </div>
+
+      <button class="submit-btn" id="submitBtn" onclick="submitForm()">📤 שלח לגיליון Google</button>
+      <div id="formMessage"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TAB 2 — DASHBOARD ══ -->
+<div class="page" id="page-dashboard">
+
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-icon green">👥</div>
+      <div>
+        <div class="stat-num" id="statTotal">—</div>
+        <div class="stat-label">סך מטופלים</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon blue">📅</div>
+      <div>
+        <div class="stat-num" id="statDates">—</div>
+        <div class="stat-label">תאריכים פעילים</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon orange">💬</div>
+      <div>
+        <div class="stat-num" id="statMsg">—</div>
+        <div class="stat-label">הודעות מוכנות</div>
+      </div>
     </div>
   </div>
 
-  <!-- שם משפחה -->
-  <div class="field-group">
-    <label>שם משפחה <span class="req">*</span></label>
-    <div class="input-row">
-      <input type="text" id="surname" placeholder="הכנס שם משפחה">
-      <button class="copy-btn" onclick="copyField('surname')" title="העתק">
-        📋
-        <span class="tooltip">הועתק!</span>
-      </button>
+  <div class="toolbar">
+    <input class="search-box" type="text" id="searchInput" placeholder="🔍  חפש לפי שם, טלפון או תאריך..." oninput="filterCards()">
+    <button class="sort-btn" id="sortBtn" onclick="toggleSort()">⏰ מיין לפי שעה</button>
+  </div>
+
+  <div class="error-banner" id="errorBanner"></div>
+
+  <div class="grid" id="grid">
+    <div class="state-box">
+      <div class="spinner"></div>
+      <h3>טוען נתונים...</h3>
     </div>
   </div>
 
-  <!-- טלפון -->
-  <div class="field-group">
-    <label>מספר טלפון <span class="req">*</span></label>
-    <div class="input-row">
-      <input type="tel" id="phone" placeholder="05X-XXXXXXX" maxlength="15" dir="ltr" style="text-align:right;">
-      <button class="copy-btn" onclick="copyField('phone')" title="העתק">
-        📋
-        <span class="tooltip">הועתק!</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- תאריך -->
-  <div class="field-group">
-    <label>תאריך <span class="req">*</span></label>
-    <div class="input-row">
-      <input type="date" id="date">
-      <button class="copy-btn" onclick="copyField('date')" title="העתק">
-        📋
-        <span class="tooltip">הועתק!</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- שעה -->
-  <div class="field-group">
-    <label>שעה <span class="req">*</span></label>
-    <div class="input-row">
-      <input type="time" id="time">
-      <button class="copy-btn" onclick="copyField('time')" title="העתק">
-        📋
-        <span class="tooltip">הועתק!</span>
-      </button>
-    </div>
-  </div>
-
-  <button class="submit-btn" onclick="submitForm()">📤 שלח לגיליון Google</button>
-  <div id="message"></div>
 </div>
 
 <script src="script.js"></script>

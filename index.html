@@ -19,6 +19,7 @@
   <div class="tabs">
     <button class="tab active" onclick="switchTab('form')" id="tab-form">✏️ הזנת תור</button>
     <button class="tab" onclick="switchTab('dashboard')" id="tab-dashboard">📊 דשבורד</button>
+    <button class="tab" onclick="switchTab('return')" id="tab-return">📞 החזר שיחה</button>
   </div>
 
   <div class="header-right">
@@ -127,6 +128,56 @@
     </div>
   </div>
 
+</div>
+
+<!-- ══ TAB 3 — RETURN CALL ══ -->
+<div class="page" id="page-return">
+  <div class="form-wrapper">
+    <div class="form-card">
+
+      <div class="form-header">
+        <div class="form-icon" style="background: linear-gradient(135deg, #25d366, #128c7e);">📞</div>
+        <h1>החזר שיחה</h1>
+        <p>הכנס מספר טלפון ושלח הודעת WhatsApp אוטומטית</p>
+      </div>
+      <div class="form-divider"></div>
+
+      <!-- Single phone entry -->
+      <div class="field-group">
+        <label class="field-label">מספר טלפון <span class="req">*</span></label>
+        <div class="input-row">
+          <input type="tel" id="returnPhone" class="form-input" placeholder="05X-XXXXXXX" maxlength="15" dir="ltr" style="text-align:right;" onkeydown="if(event.key==='Enter') addReturnPhone()">
+          <button class="copy-btn" onclick="copyField('returnPhone')">📋<span class="tooltip">הועתק!</span></button>
+        </div>
+      </div>
+
+      <button class="submit-btn" style="background: linear-gradient(135deg, #25d366, #1aab52); box-shadow: 0 4px 16px rgba(37,211,102,0.35); margin-bottom: 10px;" onclick="sendReturnMessage()">
+        📤 שלח הודעת WhatsApp
+      </button>
+
+      <div id="returnMessage"></div>
+
+      <div class="form-divider" style="margin: 24px 0 16px;"></div>
+
+      <!-- Preview of message -->
+      <div class="msg-preview-label">תצוגה מקדימה של ההודעה:</div>
+      <div class="msg-preview">
+שלום,
+פניתם לקביעת תורים לד"ר אזרוב נינה, מומחית רפואת ריאות, דרך כללית מושלם.
+מצטערים שלא הצלחנו לענות לשיחה שלך קודם.
+תוכל/י לקבוע תור בכמה דרכים:
+✅ להמשיך להתכתב איתנו כאן בוואטסאפ ונטפל בקביעת התור
+
+📞 אם מעדיפים שנחזור אליכם טלפונית - אנא ציינו זאת בהודעה
+
+💻 להיכנס לאתר האינטרנט ולקבוע תור בעצמכם:
+https://www.doctorim.co.il/...
+
+נשמח לעזור! 🙏
+      </div>
+
+    </div>
+  </div>
 </div>
 
 <script src="script.js"></script>

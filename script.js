@@ -241,7 +241,7 @@ setInterval(() => {
 /* ══════════════════════════════
    RETURN CALL
 ══════════════════════════════ */
-const RETURN_SCRIPT_URL = "YOUR_SECOND_SCRIPT_URL_HERE"; // 👈 הכנס כאן את ה-URL של הסקריפט השני
+const RETURN_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxa_z-qUKWRtfvo_kLBBtTkWzVrVdN0thi35dNGgGm2FVltsQyQbn94Wcfxli2VWllXcg/exec"; // 👈 הכנס כאן את ה-URL של הסקריפט השני
 
 const RETURN_MESSAGE =
   'שלום,\n' +

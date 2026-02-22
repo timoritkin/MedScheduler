@@ -1,0 +1,11 @@
+﻿# Local secrets/scripts
+P.ps1
+*.local.ps1
+
+# Environment files
+.env
+.env.*
+
+# Optional local notes (keep README.md tracked by default)
+README.local.md
+# README.md

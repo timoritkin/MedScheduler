@@ -1,4 +1,4 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzABalE2LXzGFgLNH8pyf2y3hcyGuHUIDWc_R0v-MfhB5G5z6LZLMHbMyNgx2PbPFBunA/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyudKifjKxt-iiMtr5BkVmqmtkQz1RuJ6tfeU1KBcDviKTcKgxqmp7AUGqOI4nasWNN_A/exec";
 
 const WA_SVG = `<svg class="wa-icon" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>`;
 
@@ -94,39 +94,111 @@ function renderCards(patients) {
   displayCards(patients);
 }
 
+function parseDate(dateStr) {
+  if (!dateStr) return new Date(0);
+  const p = dateStr.split('/');
+  if (p.length === 3) return new Date(parseInt(p[2]), parseInt(p[1])-1, parseInt(p[0]));
+  return new Date(dateStr);
+}
+
 function displayCards(patients) {
   const grid = document.getElementById('grid');
   if (!patients || patients.length === 0) {
-    grid.innerHTML = `<div class="state-box"><div class="big-icon">📭</div><h3>אין תורים להצגה</h3><p>הגיליון ריק או שכל התורים עברו</p></div>`;
+    grid.innerHTML = '<div class="state-box"><div class="big-icon">📭</div><h3>אין תורים להצגה</h3><p>הגיליון ריק או שכל התורים עברו</p></div>';
     return;
   }
 
-  grid.innerHTML = patients.map((p, i) => {
-    const initials = ((p.name||'?')[0] + (p.surname||'?')[0]).toUpperCase();
-    const waLink1 = `https://wa.me/${p.phone}?text=${encodeURIComponent(p.message1||'')}`;
-    const waLink2 = `https://wa.me/${p.phone}?text=${encodeURIComponent(p.message2||'')}`;
-    return `
-      <div class="patient-card" style="animation-delay:${i*0.05}s">
-        <div class="card-top">
-          <div class="patient-info">
-            <div class="avatar">${initials}</div>
-            <div>
-              <div class="patient-name">${p.name} ${p.surname}</div>
-              <div class="patient-phone">${p.phone}</div>
-            </div>
-          </div>
-          <div class="time-badge">⏰ ${p.time}</div>
-        </div>
-        <div class="card-meta">
-          <div class="meta-item">📅 ${p.date}</div>
-          <div class="meta-item">📞 ${p.phone}</div>
-        </div>
-        <div class="card-actions">
-          <a href="${waLink1}" target="_blank" class="wa-btn wa-btn-1">${WA_SVG} הודעה ראשונה</a>
-          <a href="${waLink2}" target="_blank" class="wa-btn wa-btn-2">${WA_SVG} תזכורת</a>
-        </div>
-      </div>`;
-  }).join('');
+  // Group by date
+  const groups = {};
+  patients.forEach(p => {
+    const key = p.date || 'ללא תאריך';
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(p);
+  });
+
+  // Sort dates ascending
+  const sortedDates = Object.keys(groups).sort((a, b) => parseDate(a) - parseDate(b));
+
+  // Sort patients by time within each group
+  sortedDates.forEach(date => {
+    groups[date].sort((a, b) => (a.time||'').localeCompare(b.time||''));
+  });
+
+  let html = '';
+  let idx = 0;
+
+  sortedDates.forEach(date => {
+    const count = groups[date].length;
+    html += '<div class="date-group-header">' +
+      '<div class="date-group-line"></div>' +
+      '<div class="date-group-label">' +
+        '<span class="date-group-icon">📅</span>' +
+        date +
+        '<span class="date-group-count">' + count + ' מטופלים</span>' +
+      '</div>' +
+      '<div class="date-group-line"></div>' +
+    '</div>';
+
+    groups[date].forEach(p => {
+      const initials = ((p.name||'?')[0] + (p.surname||'?')[0]).toUpperCase();
+      const waLink1 = 'https://wa.me/' + p.phone + '?text=' + encodeURIComponent(p.message1||'');
+      const waLink2 = 'https://wa.me/' + p.phone + '?text=' + encodeURIComponent(p.message2||'');
+      const cardId = 'card-' + idx;
+      const esc = (s) => s.replace(/'/g, "\\'");
+      html += '<div class="patient-card" style="animation-delay:' + (idx*0.04) + 's" id="' + cardId + '">' +
+        '<div class="card-top">' +
+          '<div class="patient-info">' +
+            '<div class="avatar">' + initials + '</div>' +
+            '<div>' +
+              '<div class="patient-name">' + p.name + ' ' + p.surname + '</div>' +
+              '<div class="patient-phone">' + p.phone + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div style="display:flex;align-items:center;gap:8px;">' +
+            '<div class="time-badge">⏰ ' + p.time + '</div>' +
+            '<button class="delete-btn" onclick="deletePatient(\'' + cardId + '\',\'' + esc(p.name) + '\',\'' + esc(p.phone) + '\',\'' + esc(p.date) + '\')" title="מחק מטופל">🗑️</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="card-meta">' +
+          '<div class="meta-item">📅 ' + p.date + '</div>' +
+          '<div class="meta-item">📞 ' + p.phone + '</div>' +
+        '</div>' +
+        '<div class="card-actions">' +
+          '<a href="' + waLink1 + '" target="_blank" class="wa-btn wa-btn-1">' + WA_SVG + ' הודעה ראשונה</a>' +
+          '<a href="' + waLink2 + '" target="_blank" class="wa-btn wa-btn-2">' + WA_SVG + ' תזכורת</a>' +
+        '</div>' +
+      '</div>';
+      idx++;
+    });
+  });
+
+  grid.innerHTML = html;
+}
+
+async function deletePatient(cardId, name, phone, date) {
+  if (!confirm('למחוק את ' + name + '?')) return;
+
+  const card = document.getElementById(cardId);
+  card.style.opacity = '0.4';
+  card.style.pointerEvents = 'none';
+
+  const params = new URLSearchParams({ action: 'deleteRow', name, phone, date });
+  fetch(SCRIPT_URL + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
+    .then(() => {
+      card.style.transition = 'all 0.4s';
+      card.style.transform = 'scale(0.9)';
+      card.style.opacity = '0';
+      setTimeout(() => {
+        card.remove();
+        allPatients = allPatients.filter(p => !(p.name === name && p.phone === phone));
+        updateStats(allPatients);
+      }, 400);
+    })
+    .catch(() => {
+      card.style.opacity = '1';
+      card.style.pointerEvents = 'auto';
+      alert('שגיאה במחיקה, נסה שוב');
+    });
 }
 
 function updateStats(p) {
@@ -169,7 +241,7 @@ setInterval(() => {
 /* ══════════════════════════════
    RETURN CALL
 ══════════════════════════════ */
-const RETURN_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxa_z-qUKWRtfvo_kLBBtTkWzVrVdN0thi35dNGgGm2FVltsQyQbn94Wcfxli2VWllXcg/exec"; // 👈 הכנס כאן את ה-URL של הסקריפט השני
+const RETURN_SCRIPT_URL = "YOUR_SECOND_SCRIPT_URL_HERE"; // 👈 הכנס כאן את ה-URL של הסקריפט השני
 
 const RETURN_MESSAGE =
   'שלום,\n' +

@@ -113,6 +113,29 @@ function parseDate(dateStr) {
   return new Date(dateStr);
 }
 
+function normalizeDateForSubmit(dateStr) {
+  if (!dateStr) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+  const p = dateStr.split('/');
+  if (p.length === 3) {
+    const day = p[0].padStart(2, '0');
+    const month = p[1].padStart(2, '0');
+    const year = p[2];
+    return `${year}-${month}-${day}`;
+  }
+  return dateStr;
+}
+
+function toDisplayDate(dateStr) {
+  if (!dateStr) return '';
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) return dateStr;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    const p = dateStr.split('-');
+    return `${p[2]}/${p[1]}/${p[0]}`;
+  }
+  return dateStr;
+}
+
 function displayCards(patients) {
   const grid = document.getElementById('grid');
   if (!patients || patients.length === 0) {
@@ -168,6 +191,7 @@ function displayCards(patients) {
           '</div>' +
           '<div style="display:flex;align-items:center;gap:8px;">' +
             '<div class="time-badge">⏰ ' + p.time + '</div>' +
+            '<button class="change-datetime-btn" onclick="changePatientDateTime(\'' + cardId + '\',\'' + esc(p.name) + '\',\'' + esc(p.surname || '') + '\',\'' + esc(p.phone) + '\',\'' + esc(p.date) + '\',\'' + esc(p.time || '') + '\')" title="שנה תאריך ושעה">🗓️</button>' +
             '<button class="delete-btn" onclick="deletePatient(\'' + cardId + '\',\'' + esc(p.name) + '\',\'' + esc(p.phone) + '\',\'' + esc(p.date) + '\')" title="מחק מטופל">🗑️</button>' +
           '</div>' +
         '</div>' +
@@ -211,6 +235,65 @@ async function deletePatient(cardId, name, phone, date) {
       card.style.pointerEvents = 'auto';
       alert('שגיאה במחיקה, נסה שוב');
     });
+}
+
+async function changePatientDateTime(cardId, name, surname, phone, currentDate, currentTime) {
+  const currentDateForInput = toDisplayDate(currentDate);
+  const newDate = prompt('הכנס תאריך חדש (dd/mm/yyyy):', currentDateForInput);
+
+  if (newDate === null) return;
+  if (!/^\d{2}\/\d{2}\/\d{4}$/.test(newDate.trim())) {
+    alert('פורמט תאריך לא תקין. יש להזין dd/mm/yyyy');
+    return;
+  }
+
+  const newTime = prompt('הכנס שעה חדשה (HH:MM):', (currentTime || '').trim());
+
+  if (newTime === null) return;
+  if (!/^\d{2}:\d{2}$/.test(newTime.trim())) {
+    alert('פורמט שעה לא תקין. יש להזין HH:MM');
+    return;
+  }
+
+  const trimmedDate = newDate.trim();
+  const trimmedTime = newTime.trim();
+  if (trimmedDate === currentDateForInput && trimmedTime === (currentTime || '').trim()) return;
+
+  const card = document.getElementById(cardId);
+  if (card) {
+    card.style.opacity = '0.5';
+    card.style.pointerEvents = 'none';
+  }
+
+  try {
+    const addParams = new URLSearchParams({
+      name,
+      surname,
+      phone,
+      date: normalizeDateForSubmit(trimmedDate),
+      time: trimmedTime
+    });
+
+    await fetch(SCRIPT_URL + '?' + addParams.toString(), {
+      method: 'GET',
+      mode: 'no-cors'
+    });
+
+    const deleteParams = new URLSearchParams({ action: 'deleteRow', name, phone, date: currentDate });
+    await fetch(SCRIPT_URL + '?' + deleteParams.toString(), {
+      method: 'GET',
+      mode: 'no-cors'
+    });
+
+    await loadData();
+    alert('התור עודכן בהצלחה');
+  } catch (e) {
+    if (card) {
+      card.style.opacity = '1';
+      card.style.pointerEvents = 'auto';
+    }
+    alert('לא ניתן לעדכן תור כרגע, נסה שוב');
+  }
 }
 
 function updateStats(p) {

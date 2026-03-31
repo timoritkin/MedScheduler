@@ -550,3 +550,23 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   border-color: var(--danger);
   transform: scale(1.08);
 }
+
+.change-datetime-btn {
+  background: rgba(26,115,232,0.12);
+  border: 1px solid rgba(26,115,232,0.25);
+  color: var(--blue);
+  border-radius: 8px;
+  width: 34px; height: 34px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.change-datetime-btn:hover {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+  transform: scale(1.08);
+}

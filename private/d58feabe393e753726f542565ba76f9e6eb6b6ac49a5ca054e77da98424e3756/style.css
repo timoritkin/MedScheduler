@@ -412,6 +412,33 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 .wa-btn-2:hover { background: rgba(37,211,102,0.2); transform: translateY(-1px); }
 
+.wa-btn.sent {
+  pointer-events: auto;
+}
+
+.wa-btn-1.sent {
+  background: linear-gradient(135deg, #4a5568, #2d3748);
+  color: #cbd5e0;
+  box-shadow: none;
+  border: 2px solid #48bb78;
+  opacity: 0.92;
+}
+.wa-btn-1.sent:hover {
+  background: linear-gradient(135deg, #5a6578, #3d4758);
+  transform: none;
+}
+
+.wa-btn-2.sent {
+  background: linear-gradient(135deg, var(--blue), #4285f4);
+  border: 2px solid var(--blue);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(26,115,232,0.35);
+}
+.wa-btn-2.sent:hover {
+  background: linear-gradient(135deg, #1565d8, #3b78e8);
+  transform: none;
+}
+
 .wa-icon { width: 16px; height: 16px; fill: currentColor; flex-shrink: 0; }
 
 .state-box {

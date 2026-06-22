@@ -597,3 +597,22 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   border-color: var(--blue);
   transform: scale(1.08);
 }
+
+/* ══════════════════════════════
+   AVAILABLE APPOINTMENTS PAGE
+══════════════════════════════ */
+.avail-card .avail-msg-block {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.copy-msg-btn {
+  border: 1px solid rgba(37,211,102,0.25);
+  font-family: 'Heebo', sans-serif;
+}
+
+.copy-msg-btn.copied {
+  background: rgba(37,211,102,0.35);
+  border-color: var(--primary);
+  color: #fff;
+}

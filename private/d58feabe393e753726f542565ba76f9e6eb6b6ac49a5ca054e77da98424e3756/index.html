@@ -20,6 +20,7 @@
     <button class="tab active" onclick="switchTab('form')" id="tab-form">✏️ הזנת תור</button>
     <button class="tab" onclick="switchTab('dashboard')" id="tab-dashboard">📊 דשבורד</button>
     <button class="tab" onclick="switchTab('return')" id="tab-return">📞 החזר שיחה</button>
+    <button class="tab" onclick="switchTab('available')" id="tab-available">📅 תורים פנויים</button>
   </div>
 
   <div class="header-right">
@@ -158,6 +159,49 @@
   <div class="error-banner" id="returnErrorBanner"></div>
 
   <div class="grid" id="returnGrid">
+    <div class="state-box">
+      <div class="spinner"></div>
+      <h3>טוען נתונים...</h3>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ TAB 4 — AVAILABLE APPOINTMENTS ══ -->
+<div class="page" id="page-available">
+
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-icon blue">📅</div>
+      <div>
+        <div class="stat-num" id="availTotal">—</div>
+        <div class="stat-label">תאריכים בטבלה</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon green">✅</div>
+      <div>
+        <div class="stat-num" id="availOpen">—</div>
+        <div class="stat-label">עם תורים פנויים</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon orange">🚫</div>
+      <div>
+        <div class="stat-num" id="availFull">—</div>
+        <div class="stat-label">מלאים לגמרי</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <input class="search-box" type="text" id="availSearch" placeholder="🔍  חפש לפי תאריך..." oninput="filterAvailable()">
+    <button class="refresh-btn" style="padding:11px 16px;" onclick="loadAvailableData()">🔄 רענן</button>
+  </div>
+
+  <div class="error-banner" id="availErrorBanner"></div>
+
+  <div class="grid" id="availGrid">
     <div class="state-box">
       <div class="spinner"></div>
       <h3>טוען נתונים...</h3>

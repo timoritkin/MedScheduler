@@ -1,4 +1,4 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzysyyKVJR6v9syKiw9rZetenWhWWn2Hy6YZF5qAQr9864_ABGbXR8VlHY8pQEqlGE_2g/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwof3NVPOLfsFc7SJ2pTwF1dEG4gO_yhHulki74s7Gxo1OjgSZqxmIrjW9wbzf6mckhQw/exec";
 
 const WA_SVG = `<svg class="wa-icon" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>`;
 const WA_SENT_KEY = 'clinicflow_wa_sent';
@@ -16,6 +16,7 @@ function switchTab(tab) {
   document.getElementById('page-' + tab).classList.add('active');
   if (tab === 'dashboard') loadData();
   if (tab === 'return') loadReturnData();
+  if (tab === 'available') loadAvailableData();
 }
 
 /* ══════════════════════════════
@@ -470,4 +471,135 @@ function markSent(index) {
 function filterReturn() {
   const q = document.getElementById('returnSearch').value.toLowerCase();
   displayReturnCards(allReturnData.filter(r => r.phone.toLowerCase().includes(q)));
+}
+
+/* ══════════════════════════════
+   AVAILABLE APPOINTMENTS
+══════════════════════════════ */
+const AVAILABLE_SCRIPT_URL = "PASTE_YOUR_STANDALONE_WEB_APP_URL_HERE"; // 👈 URL מה-deployment של הסקריפט העצמאי
+
+let allAvailableData = [];
+let displayedAvailableData = [];
+
+async function loadAvailableData() {
+  const grid = document.getElementById('availGrid');
+  grid.innerHTML = '<div class="state-box"><div class="spinner"></div><h3>טוען נתונים...</h3></div>';
+
+  try {
+    if (!AVAILABLE_SCRIPT_URL || AVAILABLE_SCRIPT_URL.includes('PASTE_YOUR')) {
+      throw new Error('יש להגדיר AVAILABLE_SCRIPT_URL ב-script.js עם ה-URL מה-deployment');
+    }
+    const url = AVAILABLE_SCRIPT_URL + '?action=getAvailable&t=' + Date.now();
+    const res = await fetch(url, { method: 'GET', redirect: 'follow' });
+    const text = await res.text();
+    if (text.trim().startsWith('<')) {
+      throw new Error('שגיאה בתשובה מ-Apps Script. וודא שה-deployment עודכן.');
+    }
+    const json = JSON.parse(text);
+    allAvailableData = json.data || [];
+    updateAvailStats(allAvailableData);
+    displayAvailableCards(allAvailableData);
+    document.getElementById('availErrorBanner').style.display = 'none';
+  } catch (e) {
+    document.getElementById('availErrorBanner').textContent = '⚠️ ' + e.message;
+    document.getElementById('availErrorBanner').style.display = 'block';
+    grid.innerHTML = '<div class="state-box"><div class="big-icon">❌</div><h3>שגיאה בטעינת נתונים</h3><p>וודא שהוספת action=getAvailable ל-Apps Script ושהרצת generateAvailableAppointments</p></div>';
+  }
+}
+
+function isFullyBooked(hours) {
+  return !hours || hours.includes('אין תורים פנויים');
+}
+
+function updateAvailStats(data) {
+  const full = data.filter(r => isFullyBooked(r.hours)).length;
+  document.getElementById('availTotal').textContent = data.length;
+  document.getElementById('availOpen').textContent = data.length - full;
+  document.getElementById('availFull').textContent = full;
+}
+
+function displayAvailableCards(data) {
+  const grid = document.getElementById('availGrid');
+  displayedAvailableData = data;
+
+  if (!data || data.length === 0) {
+    grid.innerHTML = '<div class="state-box"><div class="big-icon">📭</div><h3>אין תורים פנויים</h3><p>הרץ generateAvailableAppointments ב-Google Sheets כדי ליצור את הטבלה</p></div>';
+    return;
+  }
+
+  const sorted = [...data].sort((a, b) => parseDate(a.date) - parseDate(b.date));
+  displayedAvailableData = sorted;
+
+  grid.innerHTML = sorted.map((row, i) => {
+    const full = isFullyBooked(row.hours);
+    const hoursBadgeStyle = full
+      ? 'background:rgba(255,77,109,0.12); color:var(--danger); border-color:rgba(255,77,109,0.25);'
+      : 'background:rgba(37,211,102,0.12); color:var(--primary);';
+
+    return `
+      <div class="patient-card avail-card" style="animation-delay:${i * 0.04}s" id="avail-card-${i}">
+        <div class="card-top">
+          <div class="patient-info">
+            <div class="avatar" style="background: linear-gradient(135deg, var(--blue), #4fa3ff);">📅</div>
+            <div>
+              <div class="patient-name">${escapeHtml(row.date)}</div>
+              <div class="patient-phone">${full ? 'אין תורים פנויים' : 'שעות פנויות'}</div>
+            </div>
+          </div>
+          <div class="time-badge" style="${hoursBadgeStyle}">${full ? '🚫 מלא' : '⏰ ' + escapeHtml(row.hours)}</div>
+        </div>
+        <div class="avail-msg-block">
+          <div class="msg-preview-label">הודעת WhatsApp</div>
+          <div class="msg-preview">${escapeHtml(row.message || '')}</div>
+        </div>
+        <div class="card-actions">
+          <button class="wa-btn wa-btn-2 copy-msg-btn" onclick="copyAvailMessage(this, ${i})">📋 העתק הודעה</button>
+          <button class="wa-btn wa-btn-1" onclick="openAvailWhatsApp(${i})">${WA_SVG} שלח ב-WhatsApp</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function copyAvailMessage(btn, index) {
+  const message = displayedAvailableData[index]?.message;
+  if (!message) return;
+  navigator.clipboard.writeText(message).then(() => {
+    const orig = btn.innerHTML;
+    btn.classList.add('copied');
+    btn.innerHTML = '✅ הועתק!';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.innerHTML = orig;
+    }, 1800);
+  });
+}
+
+function openAvailWhatsApp(index) {
+  const message = displayedAvailableData[index]?.message;
+  if (!message) return;
+  const phone = prompt('הכנס מספר טלפון של המטופל (05X...):');
+  if (!phone || !phone.trim()) return;
+  const waPhone = formatPhoneForWhatsApp(phone.trim());
+  if (!waPhone) {
+    alert('מספר טלפון לא תקין');
+    return;
+  }
+  window.open('https://wa.me/' + waPhone + '?text=' + encodeURIComponent(message), '_blank');
+}
+
+function filterAvailable() {
+  const q = document.getElementById('availSearch').value.toLowerCase();
+  const filtered = allAvailableData.filter(r =>
+    (r.date + ' ' + r.hours + ' ' + r.message).toLowerCase().includes(q)
+  );
+  updateAvailStats(filtered);
+  displayAvailableCards(filtered);
 }

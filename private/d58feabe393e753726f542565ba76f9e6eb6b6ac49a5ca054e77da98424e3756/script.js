@@ -571,10 +571,12 @@ function displayAvailableCards(data) {
           </div>
           <div class="time-badge" style="${hoursBadgeStyle}">${full ? '🚫 מלא' : '⏰ ' + escapeHtml(row.hours)}</div>
         </div>
-        <div class="avail-msg-block">
+        
+        <div class="avail-msg-block" dir="rtl" style="text-align: right;">
           <div class="msg-preview-label">הודעת WhatsApp</div>
-          <div class="msg-preview">${escapeHtml(row.message || '')}</div>
+          <div class="msg-preview" style="text-align: right; direction: rtl; white-space: pre-line; word-break: break-word;">${escapeHtml(row.message || '')}</div>
         </div>
+        
         <div class="card-actions">
           <button class="wa-btn wa-btn-2 copy-msg-btn" onclick="copyAvailMessage(this, ${i})">📋 העתק הודעה</button>
           <button class="wa-btn wa-btn-1" onclick="openAvailWhatsApp(${i})">${WA_SVG} שלח ב-WhatsApp</button>

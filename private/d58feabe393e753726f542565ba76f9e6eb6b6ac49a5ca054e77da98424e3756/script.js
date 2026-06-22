@@ -480,7 +480,9 @@ const AVAILABLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzzPLAJNuc
 
 let allAvailableData = [];
 let displayedAvailableData = [];
-
+/* ══════════════════════════════
+   AVAILABLE APPOINTMENTS - פונקציה מעודכנת
+══════════════════════════════ */
 async function loadAvailableData() {
   const grid = document.getElementById('availGrid');
   grid.innerHTML = '<div class="state-box"><div class="spinner"></div><h3>טוען נתונים...</h3></div>';
@@ -489,12 +491,21 @@ async function loadAvailableData() {
     if (!AVAILABLE_SCRIPT_URL || AVAILABLE_SCRIPT_URL.includes('PASTE_YOUR')) {
       throw new Error('יש להגדיר AVAILABLE_SCRIPT_URL ב-script.js עם ה-URL מה-deployment');
     }
+    
     const url = AVAILABLE_SCRIPT_URL + '?action=getAvailable&t=' + Date.now();
-    const res = await fetch(url, { method: 'GET', redirect: 'follow' });
+    
+    // תיקון: הוספת הגדרות הטיפול בהפניות (credentials & redirect)
+    const res = await fetch(url, { 
+      method: 'GET',
+      mode: 'cors', // שינוי ל-cors מאובטח
+      redirect: 'follow'
+    });
+    
     const text = await res.text();
     if (text.trim().startsWith('<')) {
       throw new Error('שגיאה בתשובה מ-Apps Script. וודא שה-deployment עודכן.');
     }
+    
     const json = JSON.parse(text);
     allAvailableData = json.data || [];
     updateAvailStats(allAvailableData);
@@ -503,16 +514,17 @@ async function loadAvailableData() {
   } catch (e) {
     document.getElementById('availErrorBanner').textContent = '⚠️ ' + e.message;
     document.getElementById('availErrorBanner').style.display = 'block';
+    
+    // ננסה להציג פורמט שגיאה ידידותי יותר למשתמש
     grid.innerHTML =
       '<div class="state-box">' +
         '<div class="big-icon">❌</div>' +
         '<h3>שגיאה בטעינת נתונים</h3>' +
         '<p style="margin-top:10px;color:var(--danger);font-weight:600;">' + escapeHtml(e.message) + '</p>' +
         '<p style="margin-top:14px;font-size:0.85rem;line-height:1.7;">' +
-          '1. וודא ש-<code>AVAILABLE_SCRIPT_URL</code> ב-script.js מכיל את ה-URL מה-deployment<br>' +
-          '2. וודא שהוספת <code>doGet</code> עם <code>action=getAvailable</code> לסקריפט<br>' +
-          '3. Deploy → New version (Execute as: Me, Access: Anyone)<br>' +
-          '4. הרץ <code>generateAvailableAppointments</code> ב-Google Sheets' +
+          '1. וודא שביצעת <b>New Deployment</b> בתוך ה-Google Sheets לאחר הוספת הקוד.<br>' +
+          '2. וודא שהגדרת הגישה בגרסה החדשה היא <b>Anyone</b> (כולם).<br>' +
+          '3. וודא שהרצת את הפונקציה <code>generateAvailableAppointments</code> לפחות פעם אחת בגיליון כדי ליצור את הטבלה.' +
         '</p>' +
       '</div>';
   }

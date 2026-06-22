@@ -476,7 +476,7 @@ function filterReturn() {
 /* ══════════════════════════════
    AVAILABLE APPOINTMENTS
 ══════════════════════════════ */
-const AVAILABLE_SCRIPT_URL = "PASTE_YOUR_STANDALONE_WEB_APP_URL_HERE"; // 👈 URL מה-deployment של הסקריפט העצמאי
+const AVAILABLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbylgeffDqp7kRXO_wqZxM9ZdVOd7MlcJ3qDiFsgZxMgyVVH-0TI3bMNHTLhYNt3iMw/exec"; // 👈 URL מה-deployment של הסקריפט העצמאי
 
 let allAvailableData = [];
 let displayedAvailableData = [];

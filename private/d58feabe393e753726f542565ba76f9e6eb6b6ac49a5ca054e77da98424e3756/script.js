@@ -474,40 +474,33 @@ function filterReturn() {
 }
 
 /* ══════════════════════════════
-   AVAILABLE APPOINTMENTS
+   AVAILABLE APPOINTMENTS - Based on Dashboard Data
 ══════════════════════════════ */
-const AVAILABLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzzPLAJNucXJBYWchyKAK_-PvNEhx6lTU5y3v94Vq_gSS2VVjN8cjCWrUFpecr1eEpEZQ/exec"; // 👈 URL מה-deployment של הסקריפט העצמאי
+
+// Define all available time slots
+const ALL_TIME_SLOTS = ['8:00', '8:30', '9:00', '9:30', '10:00', '10:30', '11:00', '11:30', '12:00'];
 
 let allAvailableData = [];
 let displayedAvailableData = [];
-/* ══════════════════════════════
-   AVAILABLE APPOINTMENTS - פונקציה מעודכנת
-══════════════════════════════ */
+
 async function loadAvailableData() {
   const grid = document.getElementById('availGrid');
-  grid.innerHTML = '<div class="state-box"><div class="spinner"></div><h3>טוען נתונים...</h3></div>';
-
+  
   try {
-    if (!AVAILABLE_SCRIPT_URL || AVAILABLE_SCRIPT_URL.includes('PASTE_YOUR')) {
-      throw new Error('יש להגדיר AVAILABLE_SCRIPT_URL ב-script.js עם ה-URL מה-deployment');
+    // Use dashboard data if available, otherwise load it
+    if (allPatients.length === 0) {
+      await loadData();
     }
     
-    const url = AVAILABLE_SCRIPT_URL + '?action=getAvailable&t=' + Date.now();
+    // Aggregate appointments by date to show availability
+    const availableData = aggregateAvailableAppointments(allPatients);
     
-    // תיקון: הוספת הגדרות הטיפול בהפניות (credentials & redirect)
-    const res = await fetch(url, { 
-      method: 'GET',
-      mode: 'cors', // שינוי ל-cors מאובטח
-      redirect: 'follow'
-    });
-    
-    const text = await res.text();
-    if (text.trim().startsWith('<')) {
-      throw new Error('שגיאה בתשובה מ-Apps Script. וודא שה-deployment עודכן.');
+    if (availableData.length === 0) {
+      grid.innerHTML = '<div class="state-box"><div class="big-icon">📭</div><h3>אין תורים להצגה</h3><p>טען נתונים מהדשבורד קודם</p></div>';
+      return;
     }
     
-    const json = JSON.parse(text);
-    allAvailableData = json.data || [];
+    allAvailableData = availableData;
     updateAvailStats(allAvailableData);
     displayAvailableCards(allAvailableData);
     document.getElementById('availErrorBanner').style.display = 'none';
@@ -515,18 +508,83 @@ async function loadAvailableData() {
     document.getElementById('availErrorBanner').textContent = '⚠️ ' + e.message;
     document.getElementById('availErrorBanner').style.display = 'block';
     
-    // ננסה להציג פורמט שגיאה ידידותי יותר למשתמש
     grid.innerHTML =
       '<div class="state-box">' +
         '<div class="big-icon">❌</div>' +
         '<h3>שגיאה בטעינת נתונים</h3>' +
         '<p style="margin-top:10px;color:var(--danger);font-weight:600;">' + escapeHtml(e.message) + '</p>' +
-        '<p style="margin-top:14px;font-size:0.85rem;line-height:1.7;">' +
-          '1. וודא שביצעת <b>New Deployment</b> בתוך ה-Google Sheets לאחר הוספת הקוד.<br>' +
-          '2. וודא שהגדרת הגישה בגרסה החדשה היא <b>Anyone</b> (כולם).<br>' +
-          '3. וודא שהרצת את הפונקציה <code>generateAvailableAppointments</code> לפחות פעם אחת בגיליון כדי ליצור את הטבלה.' +
-        '</p>' +
       '</div>';
+  }
+}
+
+// Aggregate dashboard appointments data into available time slots
+function normalizeTimeStr(t) {
+  if (!t) return '';
+  let s = String(t).trim();
+  // replace common separators with ':'
+  s = s.replace(/[,.;\;]/g, ':');
+  // collapse multiple spaces
+  s = s.replace(/\s+/g, '');
+  const m = s.match(/^0?(\d{1,2}):(\d{2})$/);
+  if (m) return `${parseInt(m[1], 10)}:${m[2]}`;
+  return s;
+}
+
+const NORMALIZED_SLOTS = ALL_TIME_SLOTS.map(normalizeTimeStr);
+
+function aggregateAvailableAppointments(patients) {
+  if (!patients || patients.length === 0) return [];
+
+  // Group booked times by date (normalized)
+  const dateGroups = {};
+  patients.forEach(p => {
+    const date = p.date || 'ללא תאריך';
+    if (!dateGroups[date]) dateGroups[date] = [];
+    if (p.time) dateGroups[date].push(normalizeTimeStr(p.time));
+  });
+
+  // For each date, calculate available slots by removing booked ones
+  const available = Object.keys(dateGroups).map(date => {
+    const bookedTimes = Array.from(new Set(dateGroups[date].filter(Boolean)));
+    const bookedSet = new Set(bookedTimes);
+
+    // Keep display format from ALL_TIME_SLOTS but filter using normalized comparison
+    const availableSlots = ALL_TIME_SLOTS.filter((slot, idx) => !bookedSet.has(NORMALIZED_SLOTS[idx]));
+
+    const bookedCount = bookedTimes.length;
+    const availableCount = availableSlots.length;
+    const availableHours = availableSlots.length > 0 ? availableSlots.join(', ') : 'אין תורים פנויים';
+    const dayName = getHebrewDayName(date);
+
+    // Build bullet list for message (each on its own line) and RTL-friendly text
+    let message;
+    if (availableSlots.length === 0) {
+      message = `אין תורים פנויים ב-${date} ${dayName}.`;
+    } else {
+      const bullets = availableSlots.map(s => `•\t${s}`).join('\n');
+      message = `יש לנו תורים פנויים ב-${date} ${dayName} בשעות:\n${bullets}\n\nמה תרוצו לבחור?`;
+    }
+
+    return {
+      date: date,
+      dayName: dayName,
+      hours: availableHours,
+      message: message,
+      availableCount: availableCount,
+      bookedCount: bookedCount
+    };
+  });
+
+  return available.sort((a, b) => parseDate(a.date) - parseDate(b.date));
+}
+
+function getHebrewDayName(dateStr) {
+  try {
+    const parsed = parseDate(dateStr);
+    const days = ['יום ראשון', 'יום שני', 'יום שלישי', 'יום רביעי', 'יום חמישי', 'יום שישי', 'יום שבת'];
+    return days[parsed.getDay()];
+  } catch (e) {
+    return '';
   }
 }
 
@@ -560,26 +618,30 @@ function displayAvailableCards(data) {
       : 'background:rgba(37,211,102,0.12); color:var(--primary);';
 
     return `
-      <div class="patient-card avail-card" style="animation-delay:${i * 0.04}s" id="avail-card-${i}">
-        <div class="card-top">
+      <div class="patient-card avail-card" style="animation-delay:${i * 0.04}s; padding: 20px; min-height: 380px; display: flex; flex-direction: column;" id="avail-card-${i}">
+        <div class="card-top" style="margin-bottom: 15px;">
           <div class="patient-info">
-            <div class="avatar" style="background: linear-gradient(135deg, var(--blue), #4fa3ff);">📅</div>
+            <div class="avatar" style="background: linear-gradient(135deg, var(--blue), #4fa3ff); font-size: 24px; width: 48px; height: 48px;">📅</div>
             <div>
-              <div class="patient-name">${escapeHtml(row.date)}</div>
-              <div class="patient-phone">${full ? 'אין תורים פנויים' : 'שעות פנויות'}</div>
+              <div class="patient-name" style="font-size: 18px; font-weight: 700;">${escapeHtml(row.date)}</div>
+              <div class="patient-phone" style="font-size: 14px; color: #666;">${escapeHtml(row.dayName)}</div>
             </div>
           </div>
-          <div class="time-badge" style="${hoursBadgeStyle}">${full ? '🚫 מלא' : '⏰ ' + escapeHtml(row.hours)}</div>
         </div>
         
-        <div class="avail-msg-block" dir="rtl" style="text-align: right;">
-          <div class="msg-preview-label">הודעת WhatsApp</div>
-          <div class="msg-preview" style="text-align: right; direction: rtl; white-space: pre-line; word-break: break-word;">${escapeHtml(row.message || '')}</div>
+        <div style="background: rgba(37,211,102,0.08); border-radius: 8px; padding: 12px; margin-bottom: 15px; border-left: 4px solid var(--primary);">
+          <div style="font-size: 12px; font-weight: 600; color: var(--primary); margin-bottom: 8px;">⏰ שעות פנויות:</div>
+          <div style="font-size: 16px; font-weight: 700; color: var(--primary); word-break: break-word;">${escapeHtml(row.hours)}</div>
         </div>
         
-        <div class="card-actions">
-          <button class="wa-btn wa-btn-2 copy-msg-btn" onclick="copyAvailMessage(this, ${i})">📋 העתק הודעה</button>
-          <button class="wa-btn wa-btn-1" onclick="openAvailWhatsApp(${i})">${WA_SVG} שלח ב-WhatsApp</button>
+        <div class="avail-msg-block" dir="rtl" style="text-align: right; flex-grow: 1; margin-bottom: 15px;">
+          <div class="msg-preview-label" style="font-size: 12px; font-weight: 600; margin-bottom: 8px; color: #666;">💬 הודעת WhatsApp</div>
+          <div class="msg-preview" style="text-align: right; direction: rtl; white-space: pre-line; word-break: break-word; font-size: 14px; line-height: 1.6; padding: 12px; background: #f5f5f5; border-radius: 6px;">${escapeHtml(row.message || '')}</div>
+        </div>
+        
+        <div class="card-actions" style="display: flex; gap: 10px; margin-top: auto;">
+          <button class="wa-btn wa-btn-2 copy-msg-btn" onclick="copyAvailMessage(this, ${i})" style="flex: 1; padding: 12px; font-size: 14px;">📋 העתק הודעה</button>
+          <button class="wa-btn wa-btn-1" onclick="openAvailWhatsApp(${i})" style="flex: 1; padding: 12px; font-size: 14px;">${WA_SVG} שלח ב-WhatsApp</button>
         </div>
       </div>`;
   }).join('');

@@ -10,6 +10,8 @@
   --muted: #7a84a8;
   --danger: #ff4d6d;
   --radius: 16px;
+  --orange: #ff9f1c;
+  --orange-dark: #e68a00;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -616,3 +618,29 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   border-color: var(--primary);
   color: #fff;
 }
+
+.wa-btn-3 {
+  background: rgba(255,159,28,0.1);
+  border: 1px solid rgba(255,159,28,0.3);
+  color: var(--orange);
+}
+.wa-btn-3:hover {
+  background: rgba(255,159,28,0.2);
+  transform: translateY(-1px);
+}
+ 
+.wa-btn-3.sent {
+  background: linear-gradient(135deg, var(--orange), #ffb347);
+  border: 2px solid var(--orange);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(255,159,28,0.35);
+}
+.wa-btn-3.sent:hover {
+  background: linear-gradient(135deg, var(--orange-dark), #ffa733);
+  transform: none;
+}
+ 
+/* Three buttons in one row: let them wrap nicely on narrow cards */
+.card-actions { flex-wrap: wrap; }
+.card-actions .wa-btn { min-width: 100px; }
+ 
